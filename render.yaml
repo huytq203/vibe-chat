@@ -9,11 +9,7 @@ services:
     buildCommand: npm ci && npx prisma generate && npm run build
     startCommand: node dist/main
 
-    # ── Node version ─────────────────────────────────────────────────
-    envVars:
-      - key: NODE_VERSION
-        value: "20"  # LTS, match với engines nếu có
-
+   
     # ── Health check — Render dùng để biết app đã sẵn sàng ───────────
     healthCheckPath: /health
 
