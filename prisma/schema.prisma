@@ -1,0 +1,81 @@
+// Prisma schema — vibe-chat
+// Sync với database/schema.sql (MySQL 8.0+ / TiDB)
+// Dùng `npx prisma generate` để gen client; `npx prisma db pull` để sync từ DB thật
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// USERS — đồng bộ từ Keycloak (1 user Keycloak = 1 row)
+// =====================================================================
+model User {
+  id          BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
+  keycloakId  String     @unique @map("keycloak_id") @db.Char(36)
+  username    String     @unique @db.VarChar(50)
+  email       String?    @unique @db.VarChar(255)
+  phone       String?    @unique @db.VarChar(20)
+  displayName String     @map("display_name") @db.VarChar(100)
+  avatarUrl   String?    @map("avatar_url") @db.VarChar(500)
+  status      UserStatus @default(ACTIVE)
+  lastSeenAt  DateTime?  @map("last_seen_at") @db.DateTime(3)
+  isOnline    Boolean    @default(false) @map("is_online")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.DateTime(3)
+  deletedAt   DateTime?  @map("deleted_at") @db.DateTime(3)
+
+  profile UserProfile?
+
+  @@index([status], map: "idx_users_status")
+  @@index([lastSeenAt], map: "idx_users_last_seen")
+  @@map("users")
+}
+
+// =====================================================================
+// USER_PROFILES — thông tin mở rộng + cấu hình privacy
+// =====================================================================
+model UserProfile {
+  userId              BigInt   @id @map("user_id") @db.UnsignedBigInt
+  bio                 String?  @db.VarChar(500)
+  statusMessage       String?  @map("status_message") @db.VarChar(150)
+  dateOfBirth         DateTime? @map("date_of_birth") @db.Date
+  gender              Gender   @default(UNDISCLOSED)
+  language            String   @default("vi-VN") @db.Char(5)
+  timezone            String   @default("Asia/Ho_Chi_Minh") @db.VarChar(50)
+  privacyLastSeen     Privacy  @default(EVERYONE) @map("privacy_last_seen")
+  privacyProfilePhoto Privacy  @default(EVERYONE) @map("privacy_profile_photo")
+  privacyPhone        Privacy  @default(CONTACTS) @map("privacy_phone")
+  privacyAddToGroups  Privacy  @default(EVERYONE) @map("privacy_add_to_groups")
+  notificationEnabled Boolean  @default(true) @map("notification_enabled")
+  createdAt           DateTime @default(now()) @map("created_at") @db.DateTime(3)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.DateTime(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BANNED
+  DELETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNDISCLOSED
+}
+
+enum Privacy {
+  EVERYONE
+  CONTACTS
+  NOBODY
+}

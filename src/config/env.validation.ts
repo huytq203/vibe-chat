@@ -1,7 +1,11 @@
 import * as Joi from 'joi';
 
 export const envValidationSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'staging', 'production', 'test').default('development'),
+  NODE_ENV: Joi.string()
+    .valid('development', 'staging', 'production', 'test')
+    .default('development')
+    .required(),
+
   PORT: Joi.number().port().default(3001),
   APP_NAME: Joi.string().default('vibe-chat'),
   API_PREFIX: Joi.string().default('api'),
