@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { databaseConfig } from './config/database.config';
 import { envValidationSchema } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { HealthModule } from './health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -28,6 +29,7 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     PrismaModule,
     DatabaseModule,
+    HealthModule,
     UsersModule,
     AuthModule,
   ],
