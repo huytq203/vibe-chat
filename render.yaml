@@ -1,0 +1,101 @@
+services:
+  - type: web
+    name: vibe-chat-api
+    runtime: node
+    region: singapore   # gần nhất với VN, đổi thành oregon nếu cần
+    plan: free          # đổi thành starter/standard khi production
+
+    # ── Build ────────────────────────────────────────────────────────
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: node dist/main
+
+    # ── Node version ─────────────────────────────────────────────────
+    nodeVersion: "20"   # LTS, match với engines nếu có
+
+    # ── Health check — Render dùng để biết app đã sẵn sàng ───────────
+    healthCheckPath: /health
+
+    # ── Auto-deploy khi push lên branch ──────────────────────────────
+    autoDeploy: true
+    branch: main
+
+    # ── Environment variables ─────────────────────────────────────────
+    # Các biến có giá trị mặc định an toàn để khai báo tĩnh ở đây.
+    # Biến nhạy cảm (secret) PHẢI set qua Render Dashboard → Environment
+    # (đánh dấu "Secret" để không lộ trong log).
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 3001         # Render inject $PORT tự động, dòng này bị override — giữ để fallback
+
+      - key: APP_NAME
+        value: vibe-chat
+
+      - key: API_PREFIX
+        value: api
+
+      - key: API_VERSION
+        value: "1"
+
+      # ── Database (TiDB Cloud / MySQL) ─────────────────────────────
+      # Set các biến dưới đây qua Render Dashboard → Secret
+      - key: DB_TYPE
+        value: mysql
+
+      - key: DB_PORT
+        value: "4000"       # TiDB Cloud default
+
+      - key: DB_SSL
+        value: "true"
+
+      - key: DB_SSL_REJECT_UNAUTHORIZED
+        value: "true"
+
+      - key: DB_POOL_SIZE
+        value: "10"
+
+      - key: DB_CONNECT_TIMEOUT_MS
+        value: "10000"
+
+      - key: DB_LOGGING
+        value: "false"
+
+      - key: DB_SYNCHRONIZE
+        value: "false"
+
+      # Các biến SECRET — điền value qua Dashboard, KHÔNG commit value thật:
+      - key: DB_HOST
+        sync: false         # sync: false = Render nhắc bạn điền tay, không lưu trong yaml
+
+      - key: DB_USERNAME
+        sync: false
+
+      - key: DB_PASSWORD
+        sync: false
+
+      - key: DB_DATABASE
+        sync: false
+
+      # ── Keycloak ──────────────────────────────────────────────────
+      - key: KEYCLOAK_BASE_URL
+        sync: false
+
+      - key: KEYCLOAK_REALM
+        sync: false
+
+      - key: KEYCLOAK_CLIENT_ID
+        sync: false
+
+      - key: KEYCLOAK_CLIENT_SECRET
+        sync: false
+
+      # ── Encryption ────────────────────────────────────────────────
+      - key: MESSAGE_ENCRYPTION_KEK_BASE64
+        sync: false
+
+      # ── CORS ──────────────────────────────────────────────────────
+      # Điền domain FE, ví dụ: https://vibe-chat.onrender.com,https://yourdomain.com
+      - key: CORS_ORIGINS
+        sync: false
