@@ -10,7 +10,9 @@ services:
     startCommand: node dist/main
 
     # ── Node version ─────────────────────────────────────────────────
-    nodeVersion: "20"   # LTS, match với engines nếu có
+    envVars:
+      - key: NODE_VERSION
+        value: "20"  # LTS, match với engines nếu có
 
     # ── Health check — Render dùng để biết app đã sẵn sàng ───────────
     healthCheckPath: /health
