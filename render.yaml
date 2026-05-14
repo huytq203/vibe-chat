@@ -25,8 +25,7 @@ services:
       - key: NODE_ENV
         value: production
 
-      - key: PORT
-        value: 3001         # Render inject $PORT tự động, dòng này bị override — giữ để fallback
+      # PORT không set ở đây — Render tự inject PORT (thường 10000), app đọc qua ConfigService
 
       - key: APP_NAME
         value: vibe-chat
