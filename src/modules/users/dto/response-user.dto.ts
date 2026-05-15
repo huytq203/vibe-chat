@@ -2,11 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { User } from '@prisma/client';
 
 export class ResponseUserDto {
-  @ApiProperty({ example: '1' })
-  id!: string;
-
+  // id công khai = keycloakId (UUID v4). Không expose BIGINT autoincrement nội bộ
+  // để tránh enumeration attack và giữ định danh trùng với JWT `sub`.
   @ApiProperty({ example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' })
-  keycloakId!: string;
+  id!: string;
 
   @ApiProperty({ example: 'john_doe' })
   username!: string;
@@ -37,8 +36,7 @@ export class ResponseUserDto {
 
   static fromPrisma(user: User): ResponseUserDto {
     const dto = new ResponseUserDto();
-    dto.id = user.id.toString(); // BigInt → string
-    dto.keycloakId = user.keycloakId;
+    dto.id = user.keycloakId;
     dto.username = user.username;
     dto.email = user.email;
     dto.phone = user.phone;

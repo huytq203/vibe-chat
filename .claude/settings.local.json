@@ -10,7 +10,12 @@
       "Bash(npm test *)",
       "Bash(npm audit *)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('High:', d.get\\('metadata',{}\\).get\\('vulnerabilities',{}\\).get\\('high',0\\), 'Critical:', d.get\\('metadata',{}\\).get\\('vulnerabilities',{}\\).get\\('critical',0\\)\\)\")",
-      "Bash(Remove-Item *)"
+      "Bash(Remove-Item *)",
+      "Bash(findstr *)",
+      "Bash(where.exe findstr *)",
+      "Bash(dir \"node_modules\\\\.prisma\\\\client\\\\index.d.ts\")",
+      "Bash(dir *)",
+      "Bash(cmd *)"
     ]
   }
 }
