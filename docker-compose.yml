@@ -4,10 +4,10 @@ services:
       context: .
       dockerfile: Dockerfile
     image: vibe-chat-api:latest
-    container_name: vibe-chat-api
+    container_name: identity
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -22,6 +22,7 @@ services:
         condition: service_healthy
     networks:
       - vibe-net
+      - npm_network
 
   mysql:
     image: mysql:8.0
@@ -50,3 +51,5 @@ volumes:
 networks:
   vibe-net:
     driver: bridge
+  npm_network:       # Khai báo mạng ngoài của NPM
+    external: true
