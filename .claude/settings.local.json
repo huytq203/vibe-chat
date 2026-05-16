@@ -15,7 +15,10 @@
       "Bash(where.exe findstr *)",
       "Bash(dir \"node_modules\\\\.prisma\\\\client\\\\index.d.ts\")",
       "Bash(dir *)",
-      "Bash(cmd *)"
+      "Bash(cmd *)",
+      "Bash(docker inspect identity *)",
+      "Bash(docker exec *)",
+      "Bash(docker inspect *)"
     ]
   }
 }

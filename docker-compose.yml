@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   app:
     build:
@@ -22,34 +24,45 @@ services:
       DB_SSL_REJECT_UNAUTHORIZED: ${DB_SSL_REJECT_UNAUTHORIZED}
       DB_POOL_SIZE: ${DB_POOL_SIZE}
       DB_CONNECT_TIMEOUT_MS: ${DB_CONNECT_TIMEOUT_MS}
-      # Prisma yêu cầu DATABASE_URL — compose từ DB_* (TiDB Cloud cần sslaccept=strict)
-      DATABASE_URL: "mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslaccept=strict"
+      # Prisma MySQL: dùng sslaccept=accept_invalid_certs để bỏ qua self-signed cert của MySQL Docker nội bộ
+      DATABASE_URL: "mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}"
       KEYCLOAK_BASE_URL: ${KEYCLOAK_BASE_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       CORS_ORIGINS: ${CORS_ORIGINS}
+      MESSAGE_ENCRYPTION_KEK_BASE64: ${MESSAGE_ENCRYPTION_KEK_BASE64}
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - vibe-net
       - npm_network
 
-  # TiDB Cloud — không cần MySQL container.
-  # Nếu muốn chạy MySQL local thay vì TiDB, uncomment block dưới + sửa DB_HOST=mysql trong .env
-  # mysql:
-  #   image: mysql:8.0
-  #   container_name: vibe-mysql
-  #   restart: unless-stopped
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-  #     MYSQL_DATABASE: ${MYSQL_DATABASE:-vibe}
-  #     MYSQL_USER: ${MYSQL_USER:-vibe}
-  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - mysql-data:/var/lib/mysql
-  #   networks:
-  #     - vibe-net
+  mysql:
+    image: mysql:8.0
+    container_name: vibe-mysql
+    restart: unless-stopped
+    command: --skip-ssl
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE} # Đồng bộ thẳng với DB_DATABASE của app
+      MYSQL_USER: ${DB_USERNAME}     # Đồng bộ thẳng với DB_USERNAME của app
+      MYSQL_PASSWORD: ${DB_PASSWORD} # Đồng bộ thẳng với DB_PASSWORD của app
+    ports:
+      - "3306:3306" # Chỉ mở ở local IP để bảo mật, không public cổng 3306 ra ngoài internet
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vibe-net
+
+volumes:
+  mysql-data:
 
 networks:
   vibe-net:

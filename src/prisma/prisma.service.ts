@@ -20,11 +20,11 @@ export class PrismaService
     const username = configService.getOrThrow<string>('DB_USERNAME');
     const password = configService.getOrThrow<string>('DB_PASSWORD');
     const database = configService.getOrThrow<string>('DB_DATABASE');
-    const ssl = configService.get<string>('DB_SSL') !== 'false';
+    const ssl = configService.get<string>('DB_SSL') === 'true';
 
     const encoded = encodeURIComponent(password);
     // TiDB Cloud / MySQL TLS: Prisma dùng `sslaccept=strict` (verify cert) hoặc `accept_invalid_certs`
-    const sslParam = ssl ? '?sslaccept=strict' : '';
+    const sslParam = ssl ? '?sslaccept=accept_invalid_certs' : '';
     const datasourceUrl = `mysql://${username}:${encoded}@${host}:${port}/${database}${sslParam}`;
 
     super({ datasourceUrl });
