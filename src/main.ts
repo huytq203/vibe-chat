@@ -81,11 +81,18 @@ async function bootstrap(): Promise<void> {
   // Global interceptor — wrap response envelope
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  // CORS
+  // CORS — '*' = reflect request origin (cần thiết khi credentials: true,
+  // vì spec cấm wildcard literal cùng credentials).
   const originsRaw = configSvc.get<string>('CORS_ORIGINS', '');
-  const origins = originsRaw ? originsRaw.split(',').map((o) => o.trim()) : [];
+  const origins = originsRaw
+    ? originsRaw
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean)
+    : [];
+  const allowAll = origins.includes('*');
   app.enableCors({
-    origin: origins.length ? origins : false,
+    origin: allowAll ? true : origins.length ? origins : false,
     credentials: true,
   });
 
