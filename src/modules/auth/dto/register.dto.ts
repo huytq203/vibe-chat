@@ -45,7 +45,7 @@ export class RegisterDto {
   @IsOptional()
   @IsString({ message: 'Số điện thoại phải là chuỗi ký tự' })
   @MaxLength(20, { message: 'Số điện thoại tối đa 20 ký tự' })
-  @MinLength(11, { message: 'Số điện thoại tối thiểu 11 ký tự' })
+  @MinLength(10, { message: 'Số điện thoại tối thiểu 10 ký tự' })
   @Transform(({ value }: { value: string }) => value?.trim())
   phone?: string;
 }

@@ -127,21 +127,26 @@ export class KeycloakService {
   }): Promise<string> {
     const adminToken = await this.getAdminToken();
 
-    // Tạo user
+    // Tạo user — chỉ gửi firstName/lastName khi có giá trị non-empty
+    // (Keycloak User Profile validation reject empty string khi field required)
+    const userPayload: Record<string, unknown> = {
+      username: params.username,
+      email: params.email,
+      enabled: true,
+      emailVerified: false,
+    };
+    const firstName = params.firstName?.trim();
+    const lastName = params.lastName?.trim();
+    if (firstName) userPayload.firstName = firstName;
+    if (lastName) userPayload.lastName = lastName;
+
     const createRes = await fetch(`${this.adminBaseUrl}/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${adminToken}`,
       },
-      body: JSON.stringify({
-        username: params.username,
-        email: params.email,
-        firstName: params.firstName ?? '',
-        lastName: params.lastName ?? '',
-        enabled: true,
-        emailVerified: false,
-      }),
+      body: JSON.stringify(userPayload),
     });
 
     if (createRes.status === 409) {
@@ -152,11 +157,9 @@ export class KeycloakService {
     }
 
     if (!createRes.ok) {
-      const errBody: Record<string, unknown> = await (
-        createRes.json() as Promise<Record<string, unknown>>
-      ).catch(() => ({}));
+      const rawText = await createRes.text().catch(() => '');
       this.logger.error(
-        `Create Keycloak user failed: ${JSON.stringify(errBody)}`,
+        `Create Keycloak user failed: status=${createRes.status} body=${rawText} payload=${JSON.stringify(userPayload)}`,
       );
       throw new ServiceUnavailableException({
         code: ErrorCodes.AUTH_REGISTER_FAILED,

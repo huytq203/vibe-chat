@@ -27,7 +27,7 @@ export class AuthService {
     const user = await this.usersSvc.upsertFromKeycloak({
       keycloakId: payload.sub,
       username: payload.preferred_username,
-      email: payload.email,
+      email: payload?.email,
       displayName: payload.name ?? payload.preferred_username,
     });
 
@@ -40,9 +40,12 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto): Promise<AuthResponseDto> {
-    const nameParts = (dto.displayName ?? dto.username).trim().split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ') || '';
+    const nameParts = (dto.displayName ?? dto.username)
+      .trim()
+      .split(' ')
+      .filter(Boolean);
+    const firstName = nameParts[0] || dto.username;
+    const lastName = nameParts.slice(1).join(' ') || firstName;
 
     const keycloakId = await this.keycloakSvc.registerUser({
       username: dto.username,
